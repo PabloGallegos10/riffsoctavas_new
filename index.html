@@ -69,6 +69,12 @@
 <body>
   <h1>🎸 Generador de Riffs en Octavas</h1>
 
+  <label for="afinacion">Afinación:</label>
+  <select id="afinacion">
+    <option value="EADGBE">E A D G B E (Estándar)</option>
+    <option value="DGCFAD">D G C F A D</option>
+  </select>
+
   <label for="tonalidad">Tonalidad:</label>
   <select id="tonalidad">
     <option>C</option><option>C#</option><option>D</option><option>D#</option>
@@ -104,7 +110,11 @@
 
   <script>
     const chromatic = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-    const strings = ['E', 'A', 'D', 'G', 'B', 'E']; // 6 a 1
+
+    const afinaciones = {
+      EADGBE: ['E', 'A', 'D', 'G', 'B', 'E'],
+      DGCFAD: ['D', 'G', 'C', 'F', 'A', 'D']
+    };
 
     const intervals = {
       mayor:       [2, 2, 1, 2, 2, 2, 1],
@@ -151,15 +161,18 @@
       return validFrets.filter(f => f >= 5 && f <= 15).slice(0, 4);
     }
 
-    function generateDiagram(scale, root) {
+    function generateDiagram(scale, root, afinacion) {
       let html = `<h2>🧭 Diagrama del mástil (0–12)</h2>`;
       html += `<table><tr><th></th>`;
       for (let i = 0; i <= 12; i++) html += `<th>${i}</th>`;
       html += `</tr>`;
 
-      for (let s = 0; s < strings.length; s++) {
-        const openNote = strings[s];
-        html += `<tr><td><strong>${6 - s}</strong></td>`;
+      // Invertimos el orden para que la cuerda 1 (alta) quede arriba
+      const reversedStrings = [...afinaciones[afinacion]].reverse();
+
+      for (let s = 0; s < reversedStrings.length; s++) {
+        const openNote = reversedStrings[s];
+        html += `<tr><td><strong>${openNote}</strong></td>`;
         for (let f = 0; f <= 12; f++) {
           const note = chromatic[(chromatic.indexOf(openNote) + f) % 12];
           if (scale.includes(note)) {
@@ -178,6 +191,7 @@
 
     function generar() {
       const root = document.getElementById('tonalidad').value;
+      const afinacion = document.getElementById('afinacion').value;
       let mode = document.getElementById('modo').value;
       if (mode === 'pentatonica') {
         const tipo = document.getElementById('pentatipo').value;
@@ -185,17 +199,17 @@
       }
 
       const scale = buildScale(root, mode);
-      const frets5 = getValidFrets(scale, 'A');
-      const frets6 = getValidFrets(scale, 'E');
+      const frets5 = getValidFrets(scale, afinaciones[afinacion][1]); // cuerda A
+      const frets6 = getValidFrets(scale, afinaciones[afinacion][0]); // cuerda E (grave)
       const riff = suggestOctaveRiff(frets5);
 
       document.getElementById('resultado').textContent =
         `🎼 Escala de ${root} ${mode.replace('pentatonica_', 'pentatónica ')}:\n${scale.join(' - ')}\n\n` +
-        `🎸 Trastes válidos en cuerda 5 (A): ${frets5.join(', ')}\n` +
-        `🎸 Trastes válidos en cuerda 6 (E): ${frets6.join(', ')}\n\n` +
+        `🎸 Trastes válidos en cuerda 5 (${afinaciones[afinacion][1]}): ${frets5.join(', ')}\n` +
+        `🎸 Trastes válidos en cuerda 6 (${afinaciones[afinacion][0]}): ${frets6.join(', ')}\n\n` +
         `💡 Riff sugerido (octavas en cuerda 5): ${riff.join(', ')}`;
 
-      document.getElementById('diagrama').innerHTML = generateDiagram(scale, root);
+      document.getElementById('diagrama').innerHTML = generateDiagram(scale, root, afinacion);
     }
   </script>
 </body>
