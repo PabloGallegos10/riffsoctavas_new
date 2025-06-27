@@ -164,7 +164,7 @@
     function generateDiagram(scale, root, afinacion) {
       let html = `<h2>🧭 Diagrama del mástil (0–12)</h2>`;
       html += `<table><tr><th></th>`;
-      for (let i = 0; i <= 12; i++) html += `<th>${i}</th>`;
+      for (let i = 1; i <= 12; i++) html += `<th>${i}</th>`;
       html += `</tr>`;
 
       // Invertimos el orden para que la cuerda 1 (alta) quede arriba
@@ -173,7 +173,7 @@
       for (let s = 0; s < reversedStrings.length; s++) {
         const openNote = reversedStrings[s];
         html += `<tr><td><strong>${openNote}</strong></td>`;
-        for (let f = 0; f <= 12; f++) {
+        for (let f = 1; f <= 12; f++) {
           const note = chromatic[(chromatic.indexOf(openNote) + f) % 12];
           if (scale.includes(note)) {
             const isRoot = note === root;
