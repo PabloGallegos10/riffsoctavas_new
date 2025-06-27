@@ -83,17 +83,17 @@
   </select>
 
   <label for="modo">Modo:</label>
-  <div class="input-row">
-    <select id="modo" style="flex: 1;" onchange="togglePentatonicaTipo()">
-      <option value="mayor">Mayor</option>
-      <option value="menor">Menor</option>
-      <option value="pentatonica">Pentatónica</option>
-      <option value="aumentada">Aumentada</option>
-      <option value="disminuida">Disminuida</option>
-      <option value="mayorb5">Mayor♭5</option>
-    </select>
-    <button onclick="generar()">Go!</button>
-  </div>
+  <select id="modo" onchange="togglePentatonicaTipo()">
+  <option value="mayor">Mayor</option>
+  <option value="menor">Menor</option>
+  <option value="pentatonica">Pentatónica</option>
+  <option value="aumentada">Aumentada</option>
+  <option value="disminuida">Disminuida</option>
+  <option value="mayorb5">Mayor♭5</option>
+</select>
+  <div style="margin-top: 0.5rem; text-align: center;">
+  <button onclick="generar()">Go!</button>
+</div>
 
   <div id="pentatonica-tipo-container" class="hidden">
     <label for="pentatipo">Tipo de pentatónica:</label>
