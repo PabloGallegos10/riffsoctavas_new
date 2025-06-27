@@ -11,7 +11,7 @@
       background: #111;
       color: #eee;
       padding: 2rem;
-      max-width: 600px;
+      max-width: 700px;
       margin: auto;
     }
     select {
@@ -46,13 +46,23 @@
       white-space: pre-wrap;
     }
     .footer {
-      margin-top: 2rem;
+      margin-top: 3rem;
       font-size: 0.85rem;
       text-align: center;
       color: #888;
     }
     .hidden {
       display: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #333;
+      text-align: center;
+      padding: 4px;
     }
   </style>
 </head>
@@ -88,11 +98,13 @@
   </div>
 
   <div class="result" id="resultado"></div>
+  <div id="diagrama" class="result"></div>
 
   <div class="footer">Desarrollado por Pablo Gallegos Arancibia</div>
 
   <script>
     const chromatic = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const strings = ['E', 'A', 'D', 'G', 'B', 'E']; // 6 a 1
 
     const intervals = {
       mayor:       [2, 2, 1, 2, 2, 2, 1],
@@ -139,13 +151,37 @@
       return validFrets.filter(f => f >= 5 && f <= 15).slice(0, 4);
     }
 
+    function generateDiagram(scale, root) {
+      let html = `<h2>🧭 Diagrama del mástil (0–12)</h2>`;
+      html += `<table><tr><th></th>`;
+      for (let i = 0; i <= 12; i++) html += `<th>${i}</th>`;
+      html += `</tr>`;
+
+      for (let s = 0; s < strings.length; s++) {
+        const openNote = strings[s];
+        html += `<tr><td><strong>${6 - s}</strong></td>`;
+        for (let f = 0; f <= 12; f++) {
+          const note = chromatic[(chromatic.indexOf(openNote) + f) % 12];
+          if (scale.includes(note)) {
+            const isRoot = note === root;
+            html += `<td style="background:${isRoot ? 'red' : 'black'}; color:white">${note}</td>`;
+          } else {
+            html += `<td style="color:#555;">•</td>`;
+          }
+        }
+        html += `</tr>`;
+      }
+
+      html += `</table>`;
+      return html;
+    }
+
     function generar() {
       const root = document.getElementById('tonalidad').value;
       let mode = document.getElementById('modo').value;
-
       if (mode === 'pentatonica') {
         const tipo = document.getElementById('pentatipo').value;
-        mode = tipo; // pentatonica_mayor o pentatonica_menor
+        mode = tipo;
       }
 
       const scale = buildScale(root, mode);
@@ -158,6 +194,8 @@
         `🎸 Trastes válidos en cuerda 5 (A): ${frets5.join(', ')}\n` +
         `🎸 Trastes válidos en cuerda 6 (E): ${frets6.join(', ')}\n\n` +
         `💡 Riff sugerido (octavas en cuerda 5): ${riff.join(', ')}`;
+
+      document.getElementById('diagrama').innerHTML = generateDiagram(scale, root);
     }
   </script>
 </body>
