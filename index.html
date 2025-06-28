@@ -22,11 +22,6 @@
       margin-bottom: 0.5rem;
       border: none;
     }
-    .input-row {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
     button {
       font-size: 0.9rem;
       padding: 0.5rem 1rem;
@@ -36,7 +31,6 @@
       color: white;
       cursor: pointer;
       margin-top: 0.5rem;
-      height: 100%;
     }
     .result {
       background: #222;
@@ -84,16 +78,17 @@
 
   <label for="modo">Modo:</label>
   <select id="modo" onchange="togglePentatonicaTipo()">
-  <option value="mayor">Mayor</option>
-  <option value="menor">Menor</option>
-  <option value="pentatonica">Pentatónica</option>
-  <option value="aumentada">Aumentada</option>
-  <option value="disminuida">Disminuida</option>
-  <option value="mayorb5">Mayor♭5</option>
-</select>
+    <option value="mayor">Mayor</option>
+    <option value="menor">Menor</option>
+    <option value="pentatonica">Pentatónica</option>
+    <option value="aumentada">Aumentada</option>
+    <option value="disminuida">Disminuida</option>
+    <option value="mayorb5">Mayor♭5</option>
+  </select>
+
   <div style="margin-top: 0.5rem; text-align: center;">
-  <button onclick="generar()">Go!</button>
-</div>
+    <button onclick="generar()">Go!</button>
+  </div>
 
   <div id="pentatonica-tipo-container" class="hidden">
     <label for="pentatipo">Tipo de pentatónica:</label>
@@ -105,6 +100,24 @@
 
   <div class="result" id="resultado"></div>
   <div id="diagrama" class="result"></div>
+
+  <div style="margin-top: 3rem">
+    <h2>🎵 Detectar Tonalidad por Acordes</h2>
+
+    <label for="acordesInput">Ingresa los acordes (ej: C G Am F):</label>
+    <input
+      id="acordesInput"
+      type="text"
+      placeholder="Ej: C G Am F"
+      style="width: 100%; padding: 0.5rem; font-size: 1rem; border-radius: 5px; border: none; margin-top: 0.3rem;"
+    />
+    
+    <button onclick="analizarTonalidad()" style="margin-top: 0.5rem; padding: 0.4rem 1rem; background: #3498db; color: white; border: none; border-radius: 5px;">
+      Analizar tonalidad
+    </button>
+
+    <div class="result" id="resultadoTonalidad"></div>
+  </div>
 
   <div class="footer">Desarrollado por Pablo Gallegos Arancibia</div>
 
@@ -162,12 +175,11 @@
     }
 
     function generateDiagram(scale, root, afinacion) {
-      let html = `<h2>🧭 Diagrama del mástil (0–12)</h2>`;
+      let html = `<h2>🗭 Diagrama del mástil (1–12)</h2>`;
       html += `<table><tr><th></th>`;
       for (let i = 1; i <= 12; i++) html += `<th>${i}</th>`;
       html += `</tr>`;
 
-      // Invertimos el orden para que la cuerda 1 (alta) quede arriba
       const reversedStrings = [...afinaciones[afinacion]].reverse();
 
       for (let s = 0; s < reversedStrings.length; s++) {
@@ -179,7 +191,7 @@
             const isRoot = note === root;
             html += `<td style="background:${isRoot ? 'red' : 'black'}; color:white">${note}</td>`;
           } else {
-            html += `<td style="color:#555;">•</td>`;
+            html += `<td style="color:#555;">&bull;</td>`;
           }
         }
         html += `</tr>`;
@@ -199,8 +211,8 @@
       }
 
       const scale = buildScale(root, mode);
-      const frets5 = getValidFrets(scale, afinaciones[afinacion][1]); // cuerda A
-      const frets6 = getValidFrets(scale, afinaciones[afinacion][0]); // cuerda E (grave)
+      const frets5 = getValidFrets(scale, afinaciones[afinacion][1]);
+      const frets6 = getValidFrets(scale, afinaciones[afinacion][0]);
       const riff = suggestOctaveRiff(frets5);
 
       document.getElementById('resultado').textContent =
@@ -211,71 +223,52 @@
 
       document.getElementById('diagrama').innerHTML = generateDiagram(scale, root, afinacion);
     }
-    <!-- 🎵 Nueva sección: Detectar tonalidad por acordes -->
-<div style="margin-top: 3rem">
-  <h2>🎵 Detectar Tonalidad por Acordes</h2>
 
-  <label for="acordesInput">Ingresa los acordes (ej: C G Am F):</label>
-  <input
-    id="acordesInput"
-    type="text"
-    placeholder="Ej: D A Bm G"
-    style="width: 100%; padding: 0.5rem; font-size: 1rem; border-radius: 5px; border: none; margin-top: 0.3rem;"
-  />
-  
-  <button onclick="analizarTonalidad()" style="margin-top: 0.5rem; padding: 0.4rem 1rem; background: #3498db; color: white; border: none; border-radius: 5px;">
-    Analizar tonalidad
-  </button>
+    // 🎵 Nueva sección: Detectar tonalidad por acordes
+    const acordesEscalas = {
+      mayor: {
+        C: ['C', 'Dm', 'Em', 'F', 'G', 'Am'],
+        D: ['D', 'Em', 'F#m', 'G', 'A', 'Bm'],
+        E: ['E', 'F#m', 'G#m', 'A', 'B', 'C#m'],
+        F: ['F', 'Gm', 'Am', 'Bb', 'C', 'Dm'],
+        G: ['G', 'Am', 'Bm', 'C', 'D', 'Em'],
+        A: ['A', 'Bm', 'C#m', 'D', 'E', 'F#m'],
+        B: ['B', 'C#m', 'D#m', 'E', 'F#', 'G#m']
+      },
+      menor: {
+        Am: ['Am', 'Bdim', 'C', 'Dm', 'Em', 'F', 'G'],
+        Em: ['Em', 'F#dim', 'G', 'Am', 'Bm', 'C', 'D'],
+        Dm: ['Dm', 'Edim', 'F', 'Gm', 'Am', 'Bb', 'C'],
+        Gm: ['Gm', 'Adim', 'Bb', 'Cm', 'Dm', 'Eb', 'F']
+      }
+    };
 
-  <div class="result" id="resultadoTonalidad"></div>
-</div>
+    function analizarTonalidad() {
+      const entrada = document.getElementById('acordesInput').value.trim();
+      if (!entrada) return;
+      const acordesIngresados = entrada.split(/\s+/);
 
-<script>
-  const acordesEscalas = {
-    mayor: {
-      C: ['C', 'Dm', 'Em', 'F', 'G', 'Am'],
-      D: ['D', 'Em', 'F#m', 'G', 'A', 'Bm'],
-      E: ['E', 'F#m', 'G#m', 'A', 'B', 'C#m'],
-      F: ['F', 'Gm', 'Am', 'Bb', 'C', 'Dm'],
-      G: ['G', 'Am', 'Bm', 'C', 'D', 'Em'],
-      A: ['A', 'Bm', 'C#m', 'D', 'E', 'F#m'],
-      B: ['B', 'C#m', 'D#m', 'E', 'F#', 'G#m']
-    },
-    menor: {
-      Am: ['Am', 'Bdim', 'C', 'Dm', 'Em', 'F', 'G'],
-      Em: ['Em', 'F#dim', 'G', 'Am', 'Bm', 'C', 'D'],
-      Dm: ['Dm', 'Edim', 'F', 'Gm', 'Am', 'Bb', 'C'],
-      Gm: ['Gm', 'Adim', 'Bb', 'Cm', 'Dm', 'Eb', 'F']
-    }
-  };
+      let coincidencias = [];
 
-  function analizarTonalidad() {
-    const entrada = document.getElementById('acordesInput').value.trim();
-    if (!entrada) return;
-    const acordesIngresados = entrada.split(/\s+/);
-
-    let coincidencias = [];
-
-    for (const modo in acordesEscalas) {
-      for (const tonalidad in acordesEscalas[modo]) {
-        const escala = acordesEscalas[modo][tonalidad];
-        const match = acordesIngresados.filter(ac => escala.includes(ac));
-        if (match.length >= 3) {
-          coincidencias.push({ tonalidad, modo, match });
+      for (const modo in acordesEscalas) {
+        for (const tonalidad in acordesEscalas[modo]) {
+          const escala = acordesEscalas[modo][tonalidad];
+          const match = acordesIngresados.filter(ac => escala.includes(ac));
+          if (match.length >= 3) {
+            coincidencias.push({ tonalidad, modo, match });
+          }
         }
       }
-    }
 
-    const salida = document.getElementById('resultadoTonalidad');
-    if (coincidencias.length === 0) {
-      salida.innerHTML = 'No se pudo determinar una tonalidad clara. Intenta con más acordes.';
-    } else {
-      const mejorCoincidencia = coincidencias.sort((a, b) => b.match.length - a.match.length)[0];
-      const notas = buildScale(mejorCoincidencia.tonalidad, mejorCoincidencia.modo);
-      salida.innerHTML = `🎼 Tonalidad posible: <strong>${mejorCoincidencia.tonalidad} ${mejorCoincidencia.modo}</strong><br>
-        Escala: ${notas.join(' - ')}`;
+      const salida = document.getElementById('resultadoTonalidad');
+      if (coincidencias.length === 0) {
+        salida.innerHTML = 'No se pudo determinar una tonalidad clara. Intenta con más acordes.';
+      } else {
+        const mejorCoincidencia = coincidencias.sort((a, b) => b.match.length - a.match.length)[0];
+        const notas = buildScale(mejorCoincidencia.tonalidad, mejorCoincidencia.modo);
+        salida.innerHTML = `🎼 Tonalidad posible: <strong>${mejorCoincidencia.tonalidad} ${mejorCoincidencia.modo}</strong><br>Escala: ${notas.join(' - ')}`;
+      }
     }
-  }
   </script>
 </body>
 </html>
