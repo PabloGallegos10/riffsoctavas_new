@@ -197,26 +197,26 @@
     }
 
     function generateDiagram(scale, root, afinacion) {
-      let html = <h2>🗭 Diagrama del mástil (1–12)</h2>;
-      html += <table><tr><th></th>;
-      for (let i = 1; i <= 12; i++) html += <th>${i}</th>;
-      html += </tr>;
+      let html = '<h2>🗭 Diagrama del mástil (1–12)</h2>';
+      html += '<table><tr><th></th>';
+      for (let i = 1; i <= 12; i++) html += `<th>${i}</th>`;
+      html += '</tr>';
       const reversedStrings = [...afinaciones[afinacion]].reverse();
       for (let s = 0; s < reversedStrings.length; s++) {
         const openNote = reversedStrings[s];
-        html += <tr><td><strong>${openNote}</strong></td>;
+        html += `<tr><td><strong>${openNote}</strong></td>`;
         for (let f = 1; f <= 12; f++) {
           const note = chromatic[(chromatic.indexOf(openNote) + f) % 12];
           if (scale.includes(note)) {
             const isRoot = note === root;
-            html += <td style="background:${isRoot ? 'red' : 'black'}; color:white">${note}</td>;
+            html += `<td style="background:${isRoot ? 'red' : 'black'}; color:white">${note}</td>`;
           } else {
-            html += <td style="color:#555;">&bull;</td>;
+            html += '<td style="color:#555;">&bull;</td>';
           }
         }
-        html += </tr>;
+        html += '</tr>';
       }
-      html += </table>;
+      html += '</table>';
       return html;
     }
 
@@ -233,10 +233,10 @@
       const frets6 = getValidFrets(scale, afinaciones[afinacion][0]);
       const riff = suggestOctaveRiff(frets5);
       document.getElementById('resultado').textContent =
-        🎼 Escala de ${root} ${mode.replace('pentatonica_', 'pentatónica ')}:\n${scale.join(' - ')}\n\n +
-        🎸 Trastes válidos en cuerda 5 (${afinaciones[afinacion][1]}): ${frets5.join(', ')}\n +
-        🎸 Trastes válidos en cuerda 6 (${afinaciones[afinacion][0]}): ${frets6.join(', ')}\n\n +
-        💡 Riff sugerido (octavas en cuerda 5): ${riff.join(', ')};
+        `🎼 Escala de ${root} ${mode.replace('pentatonica_', 'pentatónica ')}:\n${scale.join(' - ')}\n\n` +
+        `🎸 Trastes válidos en cuerda 5 (${afinaciones[afinacion][1]}): ${frets5.join(', ')}\n` +
+        `🎸 Trastes válidos en cuerda 6 (${afinaciones[afinacion][0]}): ${frets6.join(', ')}\n\n` +
+        `💡 Riff sugerido (octavas en cuerda 5): ${riff.join(', ')}`;
       document.getElementById('diagrama').innerHTML = generateDiagram(scale, root, afinacion);
     }
 
@@ -280,19 +280,18 @@
       } else {
         const mejorCoincidencia = coincidencias.sort((a, b) => b.match.length - a.match.length)[0];
         const notas = buildScale(mejorCoincidencia.tonalidad, mejorCoincidencia.modo);
-        salida.innerHTML = 🎼 Tonalidad posible: <strong>${mejorCoincidencia.tonalidad} ${mejorCoincidencia.modo}</strong><br>Escala: ${notas.join(' - ')};
-        boton.innerHTML = <button onclick="usarTonalidadDetectada('${mejorCoincidencia.tonalidad}', '${mejorCoincidencia.modo}')">Usar en generador</button>;
+        salida.innerHTML = `🎼 Tonalidad posible: <strong>${mejorCoincidencia.tonalidad} ${mejorCoincidencia.modo}</strong><br>Escala: ${notas.join(' - ')}`;
+        boton.innerHTML = `<button onclick="usarTonalidadDetectada('${mejorCoincidencia.tonalidad}', '${mejorCoincidencia.modo}')">Usar en generador</button>`;
       }
     }
 
     function usarTonalidadDetectada(tonalidad, modo) {
       document.getElementById('tonalidad').value = tonalidad;
-      const modoBase = modo === 'pentatonica_mayor' ? 'pentatonica' : modo === 'pentatonica_menor' ? 'pentatonica' : modo;
+      const modoBase = modo === 'pentatonica_mayor' || modo === 'pentatonica_menor' ? 'pentatonica' : modo;
       document.getElementById('modo').value = modoBase;
       togglePentatonicaTipo();
       if (modo.includes('pentatonica')) {
-        const pentatipo = modo === 'pentatonica_mayor' ? 'pentatonica_mayor' : 'pentatonica_menor';
-        document.getElementById('pentatipo').value = pentatipo;
+        document.getElementById('pentatipo').value = modo;
       }
       generar();
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
