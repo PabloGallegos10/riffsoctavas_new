@@ -1,12 +1,11 @@
 {
   "name": "Riffs en Octavas",
   "short_name": "Riffs",
-  "description": "Genera riffs en octavas según la tonalidad y escala. Incluye diagrama del mástil.",
+  "description": "Generador de riffs en octavas por escala y tonalidad",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#111111",
   "theme_color": "#ff6600",
-  "orientation": "portrait",
   "icons": [
     {
       "src": "icon-192.png",
