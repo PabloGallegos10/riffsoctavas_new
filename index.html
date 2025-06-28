@@ -211,6 +211,71 @@
 
       document.getElementById('diagrama').innerHTML = generateDiagram(scale, root, afinacion);
     }
+    <!-- 🎵 Nueva sección: Detectar tonalidad por acordes -->
+<div style="margin-top: 3rem">
+  <h2>🎵 Detectar Tonalidad por Acordes</h2>
+
+  <label for="acordesInput">Ingresa los acordes (ej: C G Am F):</label>
+  <input
+    id="acordesInput"
+    type="text"
+    placeholder="Ej: D A Bm G"
+    style="width: 100%; padding: 0.5rem; font-size: 1rem; border-radius: 5px; border: none; margin-top: 0.3rem;"
+  />
+  
+  <button onclick="analizarTonalidad()" style="margin-top: 0.5rem; padding: 0.4rem 1rem; background: #3498db; color: white; border: none; border-radius: 5px;">
+    Analizar tonalidad
+  </button>
+
+  <div class="result" id="resultadoTonalidad"></div>
+</div>
+
+<script>
+  const acordesEscalas = {
+    mayor: {
+      C: ['C', 'Dm', 'Em', 'F', 'G', 'Am'],
+      D: ['D', 'Em', 'F#m', 'G', 'A', 'Bm'],
+      E: ['E', 'F#m', 'G#m', 'A', 'B', 'C#m'],
+      F: ['F', 'Gm', 'Am', 'Bb', 'C', 'Dm'],
+      G: ['G', 'Am', 'Bm', 'C', 'D', 'Em'],
+      A: ['A', 'Bm', 'C#m', 'D', 'E', 'F#m'],
+      B: ['B', 'C#m', 'D#m', 'E', 'F#', 'G#m']
+    },
+    menor: {
+      Am: ['Am', 'Bdim', 'C', 'Dm', 'Em', 'F', 'G'],
+      Em: ['Em', 'F#dim', 'G', 'Am', 'Bm', 'C', 'D'],
+      Dm: ['Dm', 'Edim', 'F', 'Gm', 'Am', 'Bb', 'C'],
+      Gm: ['Gm', 'Adim', 'Bb', 'Cm', 'Dm', 'Eb', 'F']
+    }
+  };
+
+  function analizarTonalidad() {
+    const entrada = document.getElementById('acordesInput').value.trim();
+    if (!entrada) return;
+    const acordesIngresados = entrada.split(/\s+/);
+
+    let coincidencias = [];
+
+    for (const modo in acordesEscalas) {
+      for (const tonalidad in acordesEscalas[modo]) {
+        const escala = acordesEscalas[modo][tonalidad];
+        const match = acordesIngresados.filter(ac => escala.includes(ac));
+        if (match.length >= 3) {
+          coincidencias.push({ tonalidad, modo, match });
+        }
+      }
+    }
+
+    const salida = document.getElementById('resultadoTonalidad');
+    if (coincidencias.length === 0) {
+      salida.innerHTML = 'No se pudo determinar una tonalidad clara. Intenta con más acordes.';
+    } else {
+      const mejorCoincidencia = coincidencias.sort((a, b) => b.match.length - a.match.length)[0];
+      const notas = buildScale(mejorCoincidencia.tonalidad, mejorCoincidencia.modo);
+      salida.innerHTML = `🎼 Tonalidad posible: <strong>${mejorCoincidencia.tonalidad} ${mejorCoincidencia.modo}</strong><br>
+        Escala: ${notas.join(' - ')}`;
+    }
+  }
   </script>
 </body>
 </html>
