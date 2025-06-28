@@ -94,12 +94,207 @@
   <div class="result" id="resultadoTonalidad"></div>
   <div id="botonAplicarTonalidad"></div>
 
-<!-- Aquí continúa el resto sin cambios -->
-<script>
-function toggleHelp() {
-  const help = document.getElementById('helpText');
-  help.classList.toggle('hidden');
-}
-</script>
+  <h2 style="margin-top: 3rem;">🎸 Generador de Riffs en Octavas</h2>
+
+  <label for="afinacion">Afinación:</label>
+  <select id="afinacion">
+    <option value="EADGBE">E A D G B E (Estándar)</option>
+    <option value="DGCFAD">D G C F A D</option>
+  </select>
+
+  <label for="tonalidad">Tonalidad:</label>
+  <select id="tonalidad">
+    <option>C</option><option>C#</option><option>D</option><option>D#</option>
+    <option>E</option><option>F</option><option>F#</option><option>G</option>
+    <option>G#</option><option>A</option><option>A#</option><option>B</option>
+  </select>
+
+  <label for="modo">Modo:</label>
+  <select id="modo" onchange="togglePentatonicaTipo()">
+    <option value="mayor">Mayor</option>
+    <option value="menor">Menor</option>
+    <option value="pentatonica">Pentatónica</option>
+    <option value="aumentada">Aumentada</option>
+    <option value="disminuida">Disminuida</option>
+    <option value="mayorb5">Mayor♭5</option>
+  </select>
+
+  <div style="margin-top: 0.5rem; text-align: center;">
+    <button onclick="generar()">Go!</button>
+  </div>
+
+  <div id="pentatonica-tipo-container" class="hidden">
+    <label for="pentatipo">Tipo de pentatónica:</label>
+    <select id="pentatipo">
+      <option value="pentatonica_mayor">Mayor</option>
+      <option value="pentatonica_menor">Menor</option>
+    </select>
+  </div>
+
+  <div class="result" id="resultado"></div>
+  <div id="diagrama" class="result"></div>
+
+  <div class="footer">Desarrollado por Pablo Gallegos Arancibia</div>
+
+  <script>
+    const chromatic = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+    const afinaciones = {
+      EADGBE: ['E', 'A', 'D', 'G', 'B', 'E'],
+      DGCFAD: ['D', 'G', 'C', 'F', 'A', 'D']
+    };
+
+    const intervals = {
+      mayor:       [2, 2, 1, 2, 2, 2, 1],
+      menor:       [2, 1, 2, 2, 1, 2, 2],
+      aumentada:   [2, 2, 2, 2, 2, 2],
+      disminuida:  [2, 1, 2, 1, 2, 1, 2, 1],
+      mayorb5:     [2, 2, 1, 2, 1, 3, 1],
+      pentatonica_mayor: [2, 2, 3, 2, 3],
+      pentatonica_menor: [3, 2, 2, 3, 2]
+    };
+
+    function toggleHelp() {
+      const help = document.getElementById('helpText');
+      help.classList.toggle('hidden');
+    }
+
+    function togglePentatonicaTipo() {
+      const modo = document.getElementById('modo').value;
+      const pentatipoContainer = document.getElementById('pentatonica-tipo-container');
+      pentatipoContainer.classList.toggle('hidden', modo !== 'pentatonica');
+    }
+
+    function buildScale(root, mode) {
+      let idx = chromatic.indexOf(root);
+      const pattern = intervals[mode];
+      const scale = [chromatic[idx % 12]];
+      for (let step of pattern) {
+        idx += step;
+        scale.push(chromatic[idx % 12]);
+      }
+      return scale;
+    }
+
+    function buildFretMap(openNote) {
+      const idx = chromatic.indexOf(openNote);
+      const frets = [];
+      for (let i = 0; i <= 21; i++) {
+        frets.push([i, chromatic[(idx + i) % 12]]);
+      }
+      return frets;
+    }
+
+    function getValidFrets(scale, openNote) {
+      const map = buildFretMap(openNote);
+      return map.filter(([fret, note]) => scale.includes(note)).map(([fret]) => fret);
+    }
+
+    function suggestOctaveRiff(validFrets) {
+      return validFrets.filter(f => f >= 5 && f <= 15).slice(0, 4);
+    }
+
+    function generateDiagram(scale, root, afinacion) {
+      let html = `<h2>🗭 Diagrama del mástil (1–12)</h2>`;
+      html += `<table><tr><th></th>`;
+      for (let i = 1; i <= 12; i++) html += `<th>${i}</th>`;
+      html += `</tr>`;
+      const reversedStrings = [...afinaciones[afinacion]].reverse();
+      for (let s = 0; s < reversedStrings.length; s++) {
+        const openNote = reversedStrings[s];
+        html += `<tr><td><strong>${openNote}</strong></td>`;
+        for (let f = 1; f <= 12; f++) {
+          const note = chromatic[(chromatic.indexOf(openNote) + f) % 12];
+          if (scale.includes(note)) {
+            const isRoot = note === root;
+            html += `<td style="background:${isRoot ? 'red' : 'black'}; color:white">${note}</td>`;
+          } else {
+            html += `<td style="color:#555;">&bull;</td>`;
+          }
+        }
+        html += `</tr>`;
+      }
+      html += `</table>`;
+      return html;
+    }
+
+    function generar() {
+      const root = document.getElementById('tonalidad').value;
+      const afinacion = document.getElementById('afinacion').value;
+      let mode = document.getElementById('modo').value;
+      if (mode === 'pentatonica') {
+        const tipo = document.getElementById('pentatipo').value;
+        mode = tipo;
+      }
+      const scale = buildScale(root, mode);
+      const frets5 = getValidFrets(scale, afinaciones[afinacion][1]);
+      const frets6 = getValidFrets(scale, afinaciones[afinacion][0]);
+      const riff = suggestOctaveRiff(frets5);
+      document.getElementById('resultado').textContent =
+        `🎼 Escala de ${root} ${mode.replace('pentatonica_', 'pentatónica ')}:\n${scale.join(' - ')}\n\n` +
+        `🎸 Trastes válidos en cuerda 5 (${afinaciones[afinacion][1]}): ${frets5.join(', ')}\n` +
+        `🎸 Trastes válidos en cuerda 6 (${afinaciones[afinacion][0]}): ${frets6.join(', ')}\n\n` +
+        `💡 Riff sugerido (octavas en cuerda 5): ${riff.join(', ')}`;
+      document.getElementById('diagrama').innerHTML = generateDiagram(scale, root, afinacion);
+    }
+
+    const acordesEscalas = {
+      mayor: {
+        C: ['C', 'Dm', 'Em', 'F', 'G', 'Am'],
+        D: ['D', 'Em', 'F#m', 'G', 'A', 'Bm'],
+        E: ['E', 'F#m', 'G#m', 'A', 'B', 'C#m'],
+        F: ['F', 'Gm', 'Am', 'Bb', 'C', 'Dm'],
+        G: ['G', 'Am', 'Bm', 'C', 'D', 'Em'],
+        A: ['A', 'Bm', 'C#m', 'D', 'E', 'F#m'],
+        B: ['B', 'C#m', 'D#m', 'E', 'F#', 'G#m']
+      },
+      menor: {
+        Am: ['Am', 'Bdim', 'C', 'Dm', 'Em', 'F', 'G'],
+        Em: ['Em', 'F#dim', 'G', 'Am', 'Bm', 'C', 'D'],
+        Dm: ['Dm', 'Edim', 'F', 'Gm', 'Am', 'Bb', 'C'],
+        Gm: ['Gm', 'Adim', 'Bb', 'Cm', 'Dm', 'Eb', 'F']
+      }
+    };
+
+    function analizarTonalidad() {
+      const entrada = document.getElementById('acordesInput').value.trim();
+      if (!entrada) return;
+      const acordesIngresados = entrada.split(/\s+/);
+      let coincidencias = [];
+      for (const modo in acordesEscalas) {
+        for (const tonalidad in acordesEscalas[modo]) {
+          const escala = acordesEscalas[modo][tonalidad];
+          const match = acordesIngresados.filter(ac => escala.includes(ac));
+          if (match.length >= 3) {
+            coincidencias.push({ tonalidad, modo, match });
+          }
+        }
+      }
+      const salida = document.getElementById('resultadoTonalidad');
+      const boton = document.getElementById('botonAplicarTonalidad');
+      if (coincidencias.length === 0) {
+        salida.innerHTML = 'No se pudo determinar una tonalidad clara. Intenta con más acordes.';
+        boton.innerHTML = '';
+      } else {
+        const mejorCoincidencia = coincidencias.sort((a, b) => b.match.length - a.match.length)[0];
+        const notas = buildScale(mejorCoincidencia.tonalidad, mejorCoincidencia.modo);
+        salida.innerHTML = `🎼 Tonalidad posible: <strong>${mejorCoincidencia.tonalidad} ${mejorCoincidencia.modo}</strong><br>Escala: ${notas.join(' - ')}`;
+        boton.innerHTML = `<button onclick="usarTonalidadDetectada('${mejorCoincidencia.tonalidad}', '${mejorCoincidencia.modo}')">Usar en generador</button>`;
+      }
+    }
+
+    function usarTonalidadDetectada(tonalidad, modo) {
+      document.getElementById('tonalidad').value = tonalidad;
+      const modoBase = modo === 'pentatonica_mayor' ? 'pentatonica' : modo === 'pentatonica_menor' ? 'pentatonica' : modo;
+      document.getElementById('modo').value = modoBase;
+      togglePentatonicaTipo();
+      if (modo.includes('pentatonica')) {
+        const pentatipo = modo === 'pentatonica_mayor' ? 'pentatonica_mayor' : 'pentatonica_menor';
+        document.getElementById('pentatipo').value = pentatipo;
+      }
+      generar();
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+  </script>
 </body>
 </html>
