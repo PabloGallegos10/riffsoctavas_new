@@ -2,7 +2,7 @@
   "name": "Riffs en Octavas",
   "short_name": "Riffs",
   "description": "Generador de riffs en octavas por escala y tonalidad",
-  "start_url": "./",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#111111",
   "theme_color": "#ff6600",
