@@ -80,7 +80,7 @@
   </style>
 </head>
 <body>
- <h1>🎵 Detectar Tonalidad por Acordes <button class="help-toggle" onclick="toggleHelp()">?</button></h1>
+  <h1>🎵 Detectar Tonalidad por Acordes <button class="help-toggle" onclick="toggleHelp()">?</button></h1>
 
   <div id="helpText" class="help-box hidden">
     Ingresa los acordes de tu canción y el sistema identificará la tonalidad más probable. Luego podrás generar una escala válida y un diagrama de mástil con los trastes sugeridos para riffs.
@@ -296,12 +296,6 @@
       }
       generar();
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    }
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(reg => console.log('✅ Service Worker registrado'))
-        .catch(err => console.warn('❌ Error al registrar el Service Worker', err));
     }
   </script>
 </body>
